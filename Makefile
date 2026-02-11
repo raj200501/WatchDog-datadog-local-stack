@@ -9,19 +9,26 @@ WEB_DIR := apps/web
 API_DIR := apps/api
 AGENT_DIR := apps/agent
 
-.PHONY: bootstrap dev seed demo
+.PHONY: bootstrap dev demo verify test clean
 
 bootstrap:
-	python3.11 -m venv $(VENV)
+	python3 -m venv $(VENV)
 	$(PIP) install --upgrade pip
-	$(PIP) install -r $(API_DIR)/requirements.txt -r $(AGENT_DIR)/requirements.txt
+	$(PIP) install -r $(API_DIR)/requirements.txt -r $(AGENT_DIR)/requirements.txt -r $(API_DIR)/requirements-dev.txt
 	cd $(WEB_DIR) && npm install
 
+verify:
+	scripts/verify.sh
+
+test:
+	python3 -m unittest discover -s tests_stdlib
+
+clean:
+	rm -rf $(VENV) .pytest_cache
+
+
 dev:
-	$(UVICORN) apps.api.main:app --host 0.0.0.0 --port 8000 --reload & \
-	cd $(WEB_DIR) && npm run dev -- --host 0.0.0.0 --port 3000
+	scripts/dev.sh
 
-seed:
-	$(AGENT) $(AGENT_DIR)/main.py --duration 30
-
-demo: bootstrap seed dev
+demo:
+	$(AGENT) $(AGENT_DIR)/main.py seed-demo --config configs/agent.yaml
