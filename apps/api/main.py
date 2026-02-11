@@ -1,8 +1,3 @@
-from fastapi import FastAPI
+from .app.main import app
 
-app = FastAPI(title="WatchDog API")
-
-
-@app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+__all__ = ["app"]
